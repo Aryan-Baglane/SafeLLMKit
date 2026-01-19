@@ -1,0 +1,56 @@
+name: Publish SafeLLMKit
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  publish-pypi:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+          
+      - name: Install build tools
+        run: pip install build
+        
+      - name: Build Package
+        run: |
+          cd safellmkit-python
+          python -m build
+          
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages_dir: safellmkit-python/dist/
+          password: ${{ secrets.PYPI_API_TOKEN }}
+
+  publish-npm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          registry-url: 'https://registry.npmjs.org'
+          
+      - name: Install & Build
+        run: |
+          cd safellmkit-js
+          npm install
+          npm run build
+          
+      - name: Publish to NPM
+        run: |
+          cd safellmkit-js
+          npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
