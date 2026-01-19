@@ -1,6 +1,7 @@
+plugins {
     kotlin("multiplatform")
     id("com.android.library")
-    `maven-publish`
+    id("maven-publish")
 }
 
 kotlin {

@@ -1,7 +1,7 @@
-
+plugins {
     kotlin("multiplatform")
     kotlin("plugin.serialization")
-    `maven-publish`
+    id("maven-publish")
 }
 repositories{
     mavenCentral()
