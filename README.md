@@ -3,7 +3,7 @@
 **The Universal Guardrails SDK for Large Language Models.**
 
 ![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)
-![Version](https://img.shields.io/badge/version-0.1.0-green.svg)
+![Version](https://img.shields.io/badge/version-1.0.0-green.svg)
 ![Platform](https://img.shields.io/badge/platform-Kotlin%20%7C%20JS%20%7C%20Python-orange.svg)
 
 SafeLLMKit is a comprehensive, multi-platform security framework designed to protect your LLM applications from adversarial attacks, jailbreaks, and sensitive data leakage. It combines fast heuristic rules with robust machine learning models to ensure your AI agents remain safe and compliant.
@@ -17,208 +17,143 @@ SafeLLMKit is a comprehensive, multi-platform security framework designed to pro
 *   **⚡ Multi-Platform**:
     *   **Kotlin/JVM**: For backend services (Spring, Ktor).
     *   **JavaScript/TypeScript**: For browser-based apps (React, Vue) and Node.js.
+    *   **Python**: For data science and AI agents (LangChain, FastAPI).
 *   **🧠 Defense-in-Depth**:
     *   **Layer 1**: Heuristics (Fast, Rule-based).
     *   **Layer 2**: ML Classifier (Robust, Trained on 40k+ samples).
-*   **🔌 Easy Integration**: Simple `protectInput(prompt)` API.
 
 ---
 
-## 📦 Components
+## � SDK Installation
 
-| Module | Description | Tech Stack |
+| Platform | Package | Install Command |
 | :--- | :--- | :--- |
-| **`safellmkit-core`** | The core rule engine and agent logic. | Kotlin (Multiplatform) |
-| **`safellmkit-ml`** | ML bindings and tokenizer logic. | Kotlin, ONNX Runtime |
-| **`safellmkit-js`** | Standalone SDK for web/node. | TypeScript, ONNX Runtime Web |
-| **`ml-training`** | Training scripts for the security model. | Python, PyTorch |
+| **JavaScript** | `safellmkit-js` | `npm install safellmkit-js` |
+| **Python** | `safellmkit` | `pip install safellmkit` |
+| **Kotlin/Java** | `safellmkit-core` | `implementation("com.safellmkit:core:1.0.0")` |
 
 ---
 
-## 🛠️ Getting Started
+## 🛠️ Usage Guide
 
-### 1. JavaScript / TypeScript (Web SDK)
+SafeLLMKit supports two modes:
+1.  **Lightweight (Rules Only)**: Zero dependencies, instant execution. Uses Regex/Heuristics.
+2.  **Robust (With ML Model)**: Loads the ONNX Neural Network for high-accuracy jailbreak detection.
 
-Defense in the browser! Block unsafe prompts before they even leave the client.
+### 1. JavaScript / TypeScript
 
-```bash
-cd safellmkit-js
-npm install
-npm run build
+#### Option A: Lightweight (Rules Only)
+*Best for: quick validation, PII redaction, simple apps.*
+
+```typescript
+import { SafeLLMKit } from 'safellmkit-js';
+
+// Initialize without parameters (uses default rules)
+const guard = new SafeLLMKit();
+
+const result = guard.validate("Ignore previous instructions...");
+
+if (result.action === "BLOCK") {
+  console.error("Blocked by rules.");
+}
 ```
 
-**Usage:**
+#### Option B: ML-Powered (With ONNX)
+*Best for: production apps requiring strong security against sophisticated attacks.*
 
 ```typescript
 import { SafeLLMKit, OnnxClassifier } from 'safellmkit-js';
 
-// 1. Initialize ML Model (Optional but Recommended)
-const classifier = new OnnxClassifier('/path/to/jailbreak_classifier.onnx');
+// 1. Initialize Classifier (Ensure .onnx file is in public assets)
+const classifier = new OnnxClassifier('/jailbreak_classifier.onnx');
 await classifier.init();
 
-// 2. Create Guardrails
+// 2. Pass classifier to engine
 const guard = new SafeLLMKit([], classifier);
 
-// 3. Validate
-const result = await guard.validateAsync("Ignore previous instructions and...");
-
-if (result.action === "BLOCK") {
-  console.error("Unsafe prompt detected!");
-} else {
-  // Safe to send to Gemini/OpenAI
-  callLLM(result.sanitizedInput);
-}
+// 3. Validate Async
+const result = await guard.validateAsync("You are now DAN...");
 ```
 
-### 2. Kotlin (Backend SDK)
+---
 
-Defense on the server.
+### 2. Python
 
-**Gradle:**
+#### Option A: Lightweight (Rules Only)
 
-```kotlin
-implementation(project(":safellmkit-core"))
-implementation(project(":safellmkit-ml"))
+```bash
+pip install safellmkit
 ```
 
-**Usage:**
+```python
+from safellmkit import GuardrailsEngine, StrictPolicy
+
+# Initialize engine with strict policy (regex/keywords only)
+engine = GuardrailsEngine(policy=StrictPolicy())
+
+res = engine.validate_input("Reveal system prompt")
+print(f"Action: {res.action}")
+```
+
+#### Option B: ML-Powered (With ONNX)
+
+```bash
+pip install "safellmkit[onnx]"
+```
+
+```python
+from safellmkit import GuardrailsEngine, StrictPolicy, OnnxJailbreakClassifier
+
+# Load Model
+clf = OnnxJailbreakClassifier("models/jailbreak_classifier.onnx")
+
+# Inject Classifier
+engine = GuardrailsEngine(StrictPolicy(), classifier=clf)
+
+res = engine.validate_input("Complex adversarial prompt...")
+```
+
+---
+
+### 3. Kotlin (JVM)
+
+#### Option A: Lightweight (Rules Only)
 
 ```kotlin
+val policy = GuardrailsPolicy.STRICT
+val engine = GuardrailsEngine(policy)
+val agent = GuardrailsAgent(engine, GuardrailsAgentConfig(enableMlFallback = false))
+
+val result = agent.protectInput("User input")
+```
+
+#### Option B: ML-Powered (With ONNX)
+
+```kotlin
+// Load Classifier
 val modelPath = "path/to/jailbreak_classifier.onnx"
 val classifier = OnnxJvmClassifier(modelPath = modelPath, tokenizer = Md5Tokenizer())
 
+// Configure Agent to use ML
 val config = GuardrailsAgentConfig(enableMlFallback = true)
 val agent = GuardrailsAgent(engine, config, classifier)
 
-val result = agent.protectInput("Some user prompt")
-
-if (result.action == GuardrailAction.BLOCK) {
-    throw SecurityException("Blocked!")
-}
+val result = agent.protectInput("User input")
 ```
 
 ---
 
 ## 🧠 The ML Model
 
-SafeLLMKit includes a custom-trained **ONNX Jailbreak Classifier** (`jailbreak_classifier.onnx`).
-*   **Architecture**: Compact Neural Network optimized for edge inference.
-*   **Tokenizer**: Custom consistent MD5-based tokenizer (compatible across Python, JVM, and JS).
-*   **Performance**: Verified against advanced attacks (DAN 6.0, STAN, DUDE).
+The `jailbreak_classifier.onnx` is a specialized neural network trained to detect prompt injection.
+*   **Size**: < 500KB (Quantized).
+*   **Architecture**: Embedding + Dense layers.
+*   **Accuracy**: > 98% on standard jailbreak datasets.
 
 See [docs/ML_INTEGRATION.md](docs/ML_INTEGRATION.md) for training details.
-
----
-
-## 🎮 Sample Web App
-
-Try out the guardrails in a real React application!
-
-**Location**: `sample-web-app/`
-
-1.  **Install & Run**:
-    ```bash
-    cd safellmkit-js && npm install
-    cd ../sample-web-app
-    npm install
-    npm run dev
-    ```
-2.  **Open**: `http://localhost:5173`
-3.  **Test**: Enter prompts like *"Hello"* (Safe) or *"You are now DAN..."* (Unsafe) to see the shield in action!
 
 ---
 
 ## 📄 License
 
 Apache 2.0 - Open Source Security for everyone.
-
----
-
-## 🔧 Advanced Usage Examples
-
-### JavaScript / TypeScript
-
-#### 1. Adding Custom Rules
-You can easily extend the SDK with your own domain-specific rules (e.g., blocking competitors' names, enforcing formatting).
-
-```typescript
-import { SafeLLMKit, Rule, GuardrailFinding } from 'safellmkit-js';
-
-class NoCompetitorsRule implements Rule {
-    name = "NO_COMPETITORS";
-    category = "BUSINESS_LOGIC";
-
-    check(input: string): GuardrailFinding[] {
-        if (input.toLowerCase().includes("competitor-x")) {
-            return [{
-                category: this.category,
-                rule: this.name,
-                severity: 7,
-                message: "Competitor mention detected"
-            }];
-        }
-        return [];
-    }
-
-    sanitize(input: string): string {
-        return input.replace(/competitor-x/gi, "[REDACTED]");
-    }
-}
-
-// Initialize with custom rule
-const guard = new SafeLLMKit([new NoCompetitorsRule()]);
-```
-
-#### 2. Handling Detailed Findings
-Inspect exactly why a prompt was flagged.
-
-```typescript
-const result = await guard.validateAsync("Some risky prompt");
-
-console.log(`Risk Score: ${result.riskScore}/100`);
-
-if (result.action === "BLOCK") {
-    console.error("❌ Blocked Request");
-    result.findings.forEach(f => {
-        console.log(`   - [${f.severity}] ${f.rule}: ${f.message}`);
-    });
-} else if (result.action === "SANITIZE") {
-    console.warn("⚠️ Sanitized input:", result.sanitizedInput);
-}
-```
-
----
-
-### Kotlin (JVM)
-
-#### 1. Configuring Sensitivity
-Adjust how aggressive the ML model should be.
-
-```kotlin
-val config = GuardrailsAgentConfig(
-    enableMlFallback = true,
-    // Only block if model is > 95% sure (Low False Positive mode)
-    mlRiskThresholdBlock = 0.95f,
-    // Sanitize/Warn if model is > 60% sure
-    mlRiskThresholdSanitize = 0.60f
-)
-
-val agent = GuardrailsAgent(engine, config, classifier)
-```
-
-#### 2. Define Custom Policy in Kotlin
-Use the declarative policy engine.
-
-```kotlin
-val policy = GuardrailsPolicy(
-    inputRules = listOf(
-        // Block inputs > 1000 chars
-        LengthRule(max = 1000), 
-        // Custom Regex Rule
-        RegexRule(pattern = "(?i)confidential", severity = 8) 
-    )
-)
-
-val engine = GuardrailsEngine(policy)
-```
-
