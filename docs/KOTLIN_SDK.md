@@ -4,12 +4,30 @@ The core backend SDK for integrating guardrails into Spring Boot, Ktor, or Andro
 
 ## 📦 Installation
 
-**Gradle (Kotlin DSL):**
+## 📦 Installation (via JitPack)
 
+To use SafeLLMKit in your Kotlin/Android project, use **JitPack**.
+
+**1. Add Repository to `settings.gradle.kts` (or root `build.gradle.kts`):**
 ```kotlin
-implementation(project(":safellmkit-core"))
-// Optional: For ML Support
-implementation(project(":safellmkit-ml"))
+dependencyResolutionManagement {
+    repositories {
+        google()
+        mavenCentral()
+        maven { url = uri("https://jitpack.io") }
+    }
+}
+```
+
+**2. Add Dependencies:**
+```kotlin
+dependencies {
+    // Core Logic (Rules)
+    implementation("com.github.Aryan-Baglane.SafeLLMKit:safellmkit-core:v1.0.0")
+    
+    // ML Support (Optional)
+    implementation("com.github.Aryan-Baglane.SafeLLMKit:safellmkit-ml:v1.0.0")
+}
 ```
 
 ## 🛠️ Usage Guide
