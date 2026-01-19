@@ -102,11 +102,6 @@ Want to understand how we train our Jailbreak Classifier or train your own?
 We have included a sample React application to demonstrate the SDK in action.
 > [**👉 View Sample Web App**](sample-web-app/README.md)
 
-## 🚢 Publishing
-
-Are you a maintainer looking to release a new version?
-> [**👉 Step-by-Step Publishing Guide (PyPI, NPM, Maven)**](docs/PUBLISHING.md)
-
 ---
 
 ## 📄 License
