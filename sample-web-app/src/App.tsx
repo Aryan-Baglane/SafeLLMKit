@@ -9,7 +9,7 @@ const guard = new SafeLLMKit([], classifier);
 
 function App() {
     const [prompt, setPrompt] = useState('');
-    const [apiKey, setApiKey] = useState('AIzaSyCkffN-IkMwyIgLxze6jvvpxW92nm5OrpE');
+    const [apiKey, setApiKey] = useState('');
     const [result, setResult] = useState<GuardrailResult | null>(null);
     const [llmResponse, setLlmResponse] = useState('');
     const [loading, setLoading] = useState(false);
