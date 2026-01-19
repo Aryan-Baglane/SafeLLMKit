@@ -1,0 +1,31 @@
+# Gradle
+.gradle/
+build/
+local.properties
+
+# IntelliJ / VSCode
+.idea/
+.vscode/
+*.iml
+
+# Node / JS
+node_modules/
+dist/
+npm-debug.log
+yarn-error.log
+.env
+
+# Python
+__pycache__/
+*.pyc
+venv/
+env/
+.pytest_cache/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# SafeLLMKit
+*.hprof
+ml-training/*.csv

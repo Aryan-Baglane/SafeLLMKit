@@ -1,0 +1,39 @@
+{
+  "version": "1.0",
+  "thresholds": {
+    "block": 70,
+    "sanitize": 40
+  },
+  "signals": [
+    {
+      "id": "ROLE_OVERRIDE",
+      "weight": 25,
+      "patterns": ["from now on you are", "act as", "pretend to be", "you are now"]
+    },
+    {
+      "id": "IGNORE_INSTRUCTIONS",
+      "weight": 40,
+      "patterns": ["ignore previous instructions", "disregard above", "forget all previous"]
+    },
+    {
+      "id": "SYSTEM_PROMPT_EXFIL",
+      "weight": 50,
+      "patterns": ["reveal system prompt", "show system prompt", "developer message", "hidden prompt"]
+    },
+    {
+      "id": "DUAL_RESPONSE_MODE",
+      "weight": 35,
+      "patterns": ["two responses", "[classic]", "[jailbreak]", "dan:"]
+    },
+    {
+      "id": "TOKEN_PRESSURE",
+      "weight": 30,
+      "patterns": ["token system", "you have", "tokens", "stay in character"]
+    },
+    {
+      "id": "POLICY_BYPASS",
+      "weight": 45,
+      "patterns": ["bypass policy", "do anything now", "no restrictions", "don't follow openai"]
+    }
+  ]
+}
